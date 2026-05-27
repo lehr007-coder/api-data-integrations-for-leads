@@ -1,0 +1,12 @@
+{
+  "lead_type": "tax delinquent",
+  "owner_name": "Anthony Rivera",
+  "phone": "9545553333",
+  "property_address": "1000 Test Ave Hollywood FL 33020",
+  "county": "Broward",
+  "filing_date": "2026-05-27",
+  "case_number": "TAX26033333",
+  "source_provider": "synthetic-test-provider",
+  "estimated_equity": 90000,
+  "estimated_value": 350000
+}
