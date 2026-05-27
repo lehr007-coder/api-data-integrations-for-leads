@@ -1,0 +1,11 @@
+{
+  "lead_type": "divorce",
+  "owner_name": "Test Owner",
+  "property_address": "321 Las Olas Blvd Fort Lauderdale FL 33301",
+  "county": "Broward",
+  "filing_date": "2026-05-27",
+  "case_number": "FMCE26011111",
+  "source_provider": "synthetic-test-provider",
+  "estimated_equity": 125000,
+  "estimated_value": 500000
+}
