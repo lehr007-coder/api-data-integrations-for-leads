@@ -1,0 +1,13 @@
+{
+  "lead_type": "foreclosure",
+  "owner_name": "John Smith",
+  "phone": "9545551212",
+  "email": "john@example.com",
+  "property_address": "123 Main St Fort Lauderdale FL 33301",
+  "county": "Broward",
+  "filing_date": "2026-05-27",
+  "case_number": "CACE26012345",
+  "source_provider": "synthetic-test-provider",
+  "estimated_equity": 250000,
+  "estimated_value": 550000
+}
