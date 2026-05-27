@@ -1,0 +1,19 @@
+name = "api-data-integrations-for-leads"
+main = "src/index.ts"
+compatibility_date = "2026-05-27"
+
+[vars]
+GHL_BASE_URL = "https://services.leadconnectorhq.com"
+GHL_LOCATION_ID = "SeZr4YCwEZ50IcWqylkQ"
+
+[[kv_namespaces]]
+binding = "DEDUPE_KV"
+id = "ADD_KV_NAMESPACE_ID"
+
+[[r2_buckets]]
+binding = "RAW_PAYLOADS"
+bucket_name = "api-data-integrations-raw"
+
+[[queues.producers]]
+queue = "api-lead-processing"
+binding = "LEAD_QUEUE"
