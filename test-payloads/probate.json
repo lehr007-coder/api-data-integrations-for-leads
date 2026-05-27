@@ -1,0 +1,11 @@
+{
+  "lead_type": "probate",
+  "owner_name": "Estate of Robert Miller",
+  "property_address": "789 Coral Way Oakland Park FL 33334",
+  "county": "Broward",
+  "filing_date": "2026-05-27",
+  "case_number": "PR26099887",
+  "source_provider": "synthetic-test-provider",
+  "estimated_equity": 310000,
+  "estimated_value": 650000
+}
