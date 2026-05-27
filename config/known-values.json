@@ -1,0 +1,69 @@
+{
+  "project": "api-data-integrations-for-leads",
+  "githubRepository": "lehr007-coder/api-data-integrations-for-leads",
+  "ghl": {
+    "baseUrl": "https://services.leadconnectorhq.com",
+    "primaryLocationId": "SeZr4YCwEZ50IcWqylkQ",
+    "mcpEndpoint": "https://services.leadconnectorhq.com/mcp/",
+    "knownWebhookUrls": [
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/da120418-b0ea-41ce-b0fb-5332b3ef9505",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/63c0c371-fc3a-423e-a032-b59c3a39eb80",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/d20bb94f-c574-4c49-bce2-a0521c2269f5",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/ae453ba5-b598-4fea-8d59-39f6db761cb4",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/f9245d8e-d706-4e0e-a125-c523a65e3fc5",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/4a0e9528-73c9-4956-b22f-b667d303ed4c",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/4faf90ae-9b81-49be-ab73-a295a08f6033",
+      "https://services.leadconnectorhq.com/hooks/SeZr4YCwEZ50IcWqylkQ/webhook-trigger/a0a8033d-2636-47ed-9227-209f258a6479"
+    ],
+    "knownMakeWebhookUrl": "https://hook.us2.make.com/lwuv1i1yurukl8ab3esythpqilys5t8l",
+    "existingFieldNamesToReuseFirst": [
+      "lead_source",
+      "lead_type",
+      "seller_score",
+      "seller_estimated_value",
+      "seller_equity",
+      "lead_intent_score",
+      "lead_priority_label",
+      "pipeline_suggestion",
+      "ai_recommendation_message",
+      "dashboard_master_json",
+      "activity_timeline",
+      "listing_address",
+      "last_webhook_received_at",
+      "last_webhook_processed",
+      "ylopo_leadType",
+      "dashboard_event_json",
+      "dashboard_lead_json",
+      "dashboard_listing_json",
+      "dashboard_matrix_json",
+      "seller_intelligence_json"
+    ]
+  },
+  "cloudflare": {
+    "accountId": "0424a0a1799c8b3b7f0947a4e3a202ba",
+    "existingProxyUrl": "https://thelistingteamproxy.reallistingteam.com",
+    "existingProxyYlopoWebhookPath": "/ylopo-webhook",
+    "existingDashboardProxyUrl": "https://listingteam-dashboard-proxy.lehr007.workers.dev"
+  },
+  "idxBroker": {
+    "apiKeyEnvVar": "IDX_BROKER_API_KEY",
+    "knownApiKeyStatus": "known_from_prior_context_but_do_not_commit_secret_values"
+  },
+  "secretsPolicy": {
+    "doNotCommit": [
+      "GHL_API_TOKEN",
+      "GHL_PRIVATE_TOKEN",
+      "GHL_CLIENT_SECRET",
+      "CLOUDFLARE_API_TOKEN",
+      "FUB_API_KEY",
+      "FUB_X_SYSTEM_KEY",
+      "ATTOM_API_KEY",
+      "DATATREE_API_KEY",
+      "SKIP_TRACE_API_KEY",
+      "DNC_API_KEY",
+      "DIRECT_MAIL_API_KEY",
+      "IDX_BROKER_API_KEY"
+    ],
+    "reason": "Secret tokens and live credentials must be stored as GitHub or Cloudflare secrets, not committed to the repository."
+  }
+}
