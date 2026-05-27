@@ -1,0 +1,13 @@
+{
+  "lead_type": "lis pendens",
+  "owner_name": "Maria Gonzalez",
+  "phone": "9545552244",
+  "email": "maria@example.com",
+  "property_address": "456 Sunrise Blvd Fort Lauderdale FL 33304",
+  "county": "Broward",
+  "filing_date": "2026-05-27",
+  "case_number": "CACE26055555",
+  "source_provider": "synthetic-test-provider",
+  "estimated_equity": 175000,
+  "estimated_value": 425000
+}
