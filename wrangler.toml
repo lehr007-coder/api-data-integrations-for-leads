@@ -6,6 +6,9 @@ compatibility_date = "2026-05-27"
 GHL_BASE_URL = "https://services.leadconnectorhq.com"
 GHL_LOCATION_ID = "SeZr4YCwEZ50IcWqylkQ"
 
+[triggers]
+crons = ["0 * * * *"]
+
 [[kv_namespaces]]
 binding = "DEDUPE_KV"
 id = "ADD_KV_NAMESPACE_ID"

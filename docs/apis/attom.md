@@ -63,6 +63,41 @@ Example body:
 
 ATTOM property lookup does not guarantee email or phone. When email/phone is present, the Worker syncs the lead to GoHighLevel. When email/phone is missing, the Worker stores the ATTOM match in R2, dedupes it in KV, and returns `202` with `route: "skip_trace"` so a licensed contact append provider can enrich it before GHL sync.
 
+## Foreclosure Feed Monitoring
+
+The Worker also supports ATTOM foreclosure/pre-foreclosure feed polling through:
+
+```text
+POST /providers/attom/foreclosures
+```
+
+The route accepts pass-through ATTOM search parameters so each market can be tuned without code changes:
+
+```json
+{
+  "searches": [
+    {
+      "name": "broward-foreclosures",
+      "limit": 25,
+      "params": {
+        "state": "FL",
+        "county": "Broward"
+      }
+    }
+  ]
+}
+```
+
+The scheduled monitor runs hourly. Configure its markets in the Cloudflare Worker variable `ATTOM_FORECLOSURE_SEARCHES` as a JSON array using the same shape as `searches`. The default endpoint is:
+
+```text
+https://api.gateway.attomdata.com/propertyapi/v1.0.0/preforeclosuredetails
+```
+
+If ATTOM enables a different foreclosure endpoint for the account, set `ATTOM_FORECLOSURE_ENDPOINT` as a Worker variable to override the default.
+
+Feed records are normalized into `foreclosure`, `pre_foreclosure`, or `lis_pendens` leads, deduped through KV, stored in R2, and routed to skip trace when email/phone is missing.
+
 ## CRM Use Risk Level
 
 `MEDIUM_RISK` for property enrichment. `HIGH_RISK` when foreclosure/distress fields are used.

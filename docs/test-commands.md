@@ -105,6 +105,28 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
 
 Batch limit: 25 items.
 
+## ATTOM Foreclosure Feed Poll
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/attom/foreclosures" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "searches": [
+      {
+        "name": "broward-foreclosures",
+        "limit": 25,
+        "params": {
+          "state": "FL",
+          "county": "Broward"
+        }
+      }
+    ]
+  }'
+```
+
+The hourly Cloudflare scheduled trigger uses `ATTOM_FORECLOSURE_SEARCHES` with the same `searches` array shape.
+
 ## Complete Pending Skip Trace
 
 ```bash

@@ -1,6 +1,12 @@
 import { intakeRoute } from './routes/intake';
 import { healthRoute } from './routes/health';
-import { attomBatchRoute, attomPropertyRoute, attomStatusRoute } from './routes/attom';
+import {
+  attomBatchRoute,
+  attomForeclosureFeedRoute,
+  attomPropertyRoute,
+  attomStatusRoute,
+  runAttomForeclosureMonitor
+} from './routes/attom';
 import { skipTraceCompleteRoute } from './routes/skip-trace';
 import { dncCompleteRoute } from './routes/dnc';
 import { recordListRoute, recordStatusRoute } from './routes/records';
@@ -34,6 +40,10 @@ export default {
       return attomBatchRoute(request, env);
     }
 
+    if (url.pathname === '/providers/attom/foreclosures' && request.method === 'POST') {
+      return attomForeclosureFeedRoute(request, env);
+    }
+
     if (url.pathname === '/pending/skip-trace/complete' && request.method === 'POST') {
       return skipTraceCompleteRoute(request, env);
     }
@@ -51,5 +61,9 @@ export default {
     }
 
     return Response.json({ ok: false, error: 'Not Found' }, { status: 404 });
+  },
+
+  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(runAttomForeclosureMonitor(env));
   }
 };

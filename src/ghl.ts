@@ -7,6 +7,8 @@ export interface Env {
   WEBHOOK_SECRET?: string;
   ATTOM_API_KEY?: string;
   ATTOM_BASE_URL?: string;
+  ATTOM_FORECLOSURE_ENDPOINT?: string;
+  ATTOM_FORECLOSURE_SEARCHES?: string;
   DEDUPE_KV: KVNamespace;
   RAW_PAYLOADS: R2Bucket;
   LEAD_QUEUE?: Queue;
