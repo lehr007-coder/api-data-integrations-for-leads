@@ -18,13 +18,17 @@ This key is a gateway credential for U.S. agency APIs that use api.data.gov auth
 
 ```text
 GET /providers/data-gov/status
+POST /providers/data-gov/request
 ```
 
 The status route reports whether the key is configured without exposing the key value.
+
+The request route is authenticated with `x-webhook-secret`, accepts an allowed api.data.gov agency URL, appends the API key server-side, and stores the response in R2 by default.
 
 ## Current Status
 
 - [x] Secret stored in Cloudflare
 - [x] Worker status route added
+- [x] Safe request gateway added
 - [ ] Agency-specific integration selected
 - [ ] Production approved

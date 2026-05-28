@@ -7,8 +7,9 @@ import {
   attomStatusRoute,
   runAttomForeclosureMonitor
 } from './routes/attom';
-import { adminImportPolicyRoute } from './routes/admin';
-import { dataGovStatusRoute } from './routes/data-gov';
+import { adminImportPolicyRoute, adminReleaseRoute } from './routes/admin';
+import { dataGovRequestRoute, dataGovStatusRoute } from './routes/data-gov';
+import { reolStatusRoute } from './routes/reol';
 import { skipTraceCompleteRoute } from './routes/skip-trace';
 import { dncCompleteRoute } from './routes/dnc';
 import { recordListRoute, recordStatusRoute } from './routes/records';
@@ -36,6 +37,14 @@ export default {
 
     if (url.pathname === '/providers/data-gov/status' && request.method === 'GET') {
       return dataGovStatusRoute(env);
+    }
+
+    if (url.pathname === '/providers/data-gov/request' && request.method === 'POST') {
+      return dataGovRequestRoute(request, env);
+    }
+
+    if (url.pathname === '/providers/reol/status' && request.method === 'GET') {
+      return reolStatusRoute(env);
     }
 
     if (url.pathname === '/providers/attom/property' && request.method === 'POST') {
@@ -68,6 +77,10 @@ export default {
 
     if (url.pathname === '/admin/import-policy') {
       return adminImportPolicyRoute(request, env);
+    }
+
+    if (url.pathname === '/admin/release') {
+      return adminReleaseRoute(request, env);
     }
 
     return Response.json({ ok: false, error: 'Not Found' }, { status: 404 });

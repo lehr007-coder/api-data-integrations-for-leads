@@ -10,6 +10,7 @@ export interface Env {
   ATTOM_FORECLOSURE_ENDPOINT?: string;
   ATTOM_FORECLOSURE_SEARCHES?: string;
   DATA_GOV_API_KEY?: string;
+  REOL_API_KEY?: string;
   DEDUPE_KV: KVNamespace;
   RAW_PAYLOADS: R2Bucket;
   LEAD_QUEUE?: Queue;

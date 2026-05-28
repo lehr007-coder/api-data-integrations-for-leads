@@ -163,10 +163,43 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
 ```
 
+Release a held record into GoHighLevel:
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/admin/release" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "cloudflareRecordRef": "CLOUDFLARE_RECORD_REF",
+    "tags": ["admin-reviewed"]
+  }'
+```
+
 ## data.gov Status
 
 ```bash
 curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/data-gov/status"
+```
+
+## data.gov Request
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/data-gov/request" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "url": "https://api.data.gov/example/agency/path",
+    "method": "GET",
+    "store": true
+  }'
+```
+
+The Worker appends `DATA_GOV_API_KEY` server-side and stores the response in R2 by default.
+
+## REOL Status
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/reol/status"
 ```
 
 ## Complete Pending Skip Trace
