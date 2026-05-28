@@ -81,6 +81,20 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
 
 Expected result: `202 Accepted` with `pending: true` and `route: "skip_trace"`.
 
+## Complete Pending Skip Trace
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/pending/skip-trace/complete" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "cloudflareRecordRef": "CLOUDFLARE_RECORD_REF_FROM_PENDING_RESPONSE",
+    "email": "owner@example.com",
+    "phone": "9545551212",
+    "tags": ["skip-trace-provider-manual"]
+  }'
+```
+
 ## Expected Result
 
 The response should include:

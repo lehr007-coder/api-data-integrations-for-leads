@@ -1,6 +1,7 @@
 import { intakeRoute } from './routes/intake';
 import { healthRoute } from './routes/health';
 import { attomPropertyRoute, attomStatusRoute } from './routes/attom';
+import { skipTraceCompleteRoute } from './routes/skip-trace';
 import type { Env } from './ghl';
 
 export default {
@@ -25,6 +26,10 @@ export default {
 
     if (url.pathname === '/providers/attom/property' && request.method === 'POST') {
       return attomPropertyRoute(request, env);
+    }
+
+    if (url.pathname === '/pending/skip-trace/complete' && request.method === 'POST') {
+      return skipTraceCompleteRoute(request, env);
     }
 
     return Response.json({ ok: false, error: 'Not Found' }, { status: 404 });
