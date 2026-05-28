@@ -67,6 +67,20 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   }'
 ```
 
+## ATTOM Property Lookup Without Contact Info
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/attom/property" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "address": "4529 Winona Court, Denver, CO",
+    "lead_type": "property_enrichment"
+  }'
+```
+
+Expected result: `202 Accepted` with `pending: true` and `route: "skip_trace"`.
+
 ## Expected Result
 
 The response should include:

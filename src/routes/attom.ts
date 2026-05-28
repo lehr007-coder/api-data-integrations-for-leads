@@ -139,13 +139,33 @@ async function processAttomLead(env: Env, payload: IntakeLeadPayload, attomBody:
     });
   }
 
+  const feeder = evaluateDistributionReadiness(compliantLead);
+
   await env.RAW_PAYLOADS.put(
     `${cloudflareRecordRef}.attom.json`,
-    JSON.stringify({ receivedAt: new Date().toISOString(), payload, attomBody }, null, 2),
+    JSON.stringify({ receivedAt: new Date().toISOString(), payload, attomBody, compliance, feeder }, null, 2),
     { httpMetadata: { contentType: 'application/json' } }
   );
 
-  const feeder = evaluateDistributionReadiness(compliantLead);
+  if (!payload.email && !payload.phone) {
+    return Response.json({
+      ok: true,
+      duplicate: false,
+      pending: true,
+      route: 'skip_trace',
+      cloudflareRecordRef,
+      dedupeKey: dedupe.dedupeKey,
+      message: 'ATTOM property matched and stored. Contact sync is pending email/phone append.',
+      compliance,
+      feeder,
+      lead: compliantLead,
+      attom: {
+        matched: Boolean(firstProperty(attomBody)),
+        status: attomBody?.status
+      }
+    }, { status: 202 });
+  }
+
   const routedLead = applyDistributionDecision(compliantLead, feeder);
   const ghl = await createOrUpdateGhlContact(env, routedLead);
 
@@ -191,13 +211,6 @@ export async function attomPropertyRoute(request: Request, env: Env): Promise<Re
     const payload = await request.json() as AttomPropertyRequest;
     const attomBody = await fetchAttomProperty(env, payload);
     const lead = mapAttomToLead(payload, attomBody);
-
-    if (!lead.email && !lead.phone) {
-      return Response.json({
-        ok: false,
-        error: 'GHL contact creation requires email or phone. Add email/phone or connect a skip-trace provider before syncing ATTOM owner data.'
-      }, { status: 422 });
-    }
 
     return processAttomLead(env, lead, attomBody);
   } catch (error) {

@@ -61,7 +61,7 @@ Example body:
 
 ## Integration Notes
 
-ATTOM property lookup does not guarantee email or phone. GoHighLevel contact upsert requires at least one of `email` or `phone`, so production ATTOM usage should be paired with licensed skip-trace/contact append data before GHL sync when ATTOM does not return a contact identifier.
+ATTOM property lookup does not guarantee email or phone. When email/phone is present, the Worker syncs the lead to GoHighLevel. When email/phone is missing, the Worker stores the ATTOM match in R2, dedupes it in KV, and returns `202` with `route: "skip_trace"` so a licensed contact append provider can enrich it before GHL sync.
 
 ## CRM Use Risk Level
 
