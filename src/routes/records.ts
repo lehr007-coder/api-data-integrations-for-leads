@@ -130,3 +130,56 @@ export async function recordStatusRoute(request: Request, env: Env): Promise<Res
     }, { status: 500 });
   }
 }
+
+function boundedLimit(value: string | null): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) return 25;
+  return Math.min(parsed, 100);
+}
+
+function stageFromKey(key: string): string {
+  const match = STAGES.find((stage) => key.endsWith(stage.suffix));
+  return match?.key || 'unknown';
+}
+
+function recordRefFromKey(key: string): string {
+  const match = STAGES.find((stage) => key.endsWith(stage.suffix));
+  return match ? key.slice(0, -match.suffix.length) : key;
+}
+
+export async function recordListRoute(request: Request, env: Env): Promise<Response> {
+  try {
+    if (!isAuthorized(request, env)) {
+      return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const limit = boundedLimit(url.searchParams.get('limit'));
+    const prefix = clean(url.searchParams.get('prefix'));
+    const cursor = clean(url.searchParams.get('cursor'));
+
+    const listed = await env.RAW_PAYLOADS.list({
+      limit,
+      prefix,
+      cursor
+    });
+
+    return Response.json({
+      ok: true,
+      truncated: listed.truncated,
+      cursor: listed.truncated ? listed.cursor : undefined,
+      records: listed.objects.map((object) => ({
+        key: object.key,
+        cloudflareRecordRef: recordRefFromKey(object.key),
+        stage: stageFromKey(object.key),
+        size: object.size,
+        uploaded: object.uploaded?.toISOString()
+      }))
+    });
+  } catch (error) {
+    return Response.json({
+      ok: false,
+      error: error instanceof Error ? error.message : 'Unknown record list error'
+    }, { status: 500 });
+  }
+}

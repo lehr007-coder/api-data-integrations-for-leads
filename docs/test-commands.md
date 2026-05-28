@@ -119,6 +119,13 @@ curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/
   -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
 ```
 
+## List Stored Records
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/records/list?limit=25" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
+```
+
 ## Expected Result
 
 The response should include:
