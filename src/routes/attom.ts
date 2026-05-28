@@ -4,6 +4,7 @@ import { evaluateCompliance, applyComplianceDecision } from '../compliance';
 import { checkAndStoreDedupe } from '../dedupe';
 import { createOrUpdateGhlContact, type Env } from '../ghl';
 import { evaluateDistributionReadiness, applyDistributionDecision } from '../distribution-feeder';
+import { evaluateImportPolicy, storeImportHold } from '../import-policy';
 import type { IntakeLeadPayload } from '../types';
 
 interface AttomPropertyRequest {
@@ -344,6 +345,27 @@ async function processAttomLead(env: Env, payload: IntakeLeadPayload, attomBody:
   }
 
   const routedLead = applyDistributionDecision(compliantLead, feeder);
+  const importDecision = await evaluateImportPolicy(env, routedLead);
+
+  if (!importDecision.allowGhlSync) {
+    await storeImportHold(env, cloudflareRecordRef, routedLead, importDecision);
+    return Response.json({
+      ok: true,
+      duplicate: false,
+      route: 'admin_hold',
+      cloudflareRecordRef,
+      dedupeKey: dedupe.dedupeKey,
+      importPolicy: importDecision,
+      compliance,
+      feeder,
+      lead: routedLead,
+      attom: {
+        matched: Boolean(firstProperty(attomBody)),
+        status: attomBody?.status
+      }
+    });
+  }
+
   const ghl = await createOrUpdateGhlContact(env, routedLead);
 
   return Response.json({
@@ -352,6 +374,7 @@ async function processAttomLead(env: Env, payload: IntakeLeadPayload, attomBody:
     cloudflareRecordRef,
     dedupeKey: dedupe.dedupeKey,
     ghl,
+    importPolicy: importDecision,
     compliance,
     feeder,
     lead: routedLead,

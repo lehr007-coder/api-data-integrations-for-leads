@@ -25,6 +25,7 @@ export function scoreLead(lead: NormalizedLead): NormalizedLead {
       score += 10;
       break;
     case 'divorce':
+    case 'legal_filing':
       score += 5;
       break;
   }

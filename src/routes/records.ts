@@ -5,6 +5,7 @@ const STAGES = [
   { key: 'skipTrace', suffix: '.skip-trace-complete.json' },
   { key: 'dnc', suffix: '.dnc-complete.json' },
   { key: 'readyActions', suffix: '.ghl-ready-actions.json' },
+  { key: 'adminHold', suffix: '.admin-hold.json' },
   { key: 'intake', suffix: '.json' }
 ] as const;
 
@@ -77,6 +78,16 @@ function summarizeStage(stage: string, record: any): Record<string, unknown> {
     };
   }
 
+  if (stage === 'adminHold') {
+    return {
+      exists: true,
+      heldAt: record.heldAt,
+      reason: record.decision?.reason,
+      allowGhlSync: record.decision?.allowGhlSync,
+      lead: record.lead
+    };
+  }
+
   return {
     exists: true,
     receivedAt: record.receivedAt,
@@ -112,6 +123,7 @@ export async function recordStatusRoute(request: Request, env: Env): Promise<Res
 
     const currentRoute =
       (stages.readyActions as any).exists ? 'worked' :
+      (stages.adminHold as any).exists ? 'admin_hold' :
       (stages.dnc as any).route ||
       (stages.skipTrace as any).route ||
       (stages.attom as any).route ||

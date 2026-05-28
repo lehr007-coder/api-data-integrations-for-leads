@@ -127,6 +127,48 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
 
 The hourly Cloudflare scheduled trigger uses `ATTOM_FORECLOSURE_SEARCHES` with the same `searches` array shape.
 
+## Admin Import Policy
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/admin/import-policy" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
+```
+
+Pause one category from syncing into GoHighLevel:
+
+```bash
+curl -X PUT "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/admin/import-policy" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "blockedLeadTypes": ["divorce"],
+    "allowedLeadTypes": [
+      "foreclosure",
+      "pre_foreclosure",
+      "lis_pendens",
+      "divorce",
+      "probate",
+      "tax_delinquent",
+      "code_violation",
+      "legal_filing",
+      "property_enrichment"
+    ]
+  }'
+```
+
+Reset to defaults:
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/admin/import-policy" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
+```
+
+## data.gov Status
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/data-gov/status"
+```
+
 ## Complete Pending Skip Trace
 
 ```bash

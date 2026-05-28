@@ -10,7 +10,7 @@ export interface ComplianceDecision {
   tags: string[];
 }
 
-const SENSITIVE_TYPES = new Set(['divorce', 'probate', 'foreclosure', 'pre_foreclosure', 'lis_pendens']);
+const SENSITIVE_TYPES = new Set(['divorce', 'probate', 'foreclosure', 'pre_foreclosure', 'lis_pendens', 'legal_filing']);
 
 export function evaluateCompliance(lead: NormalizedLead): ComplianceDecision {
   const tags = new Set<string>();
@@ -19,7 +19,7 @@ export function evaluateCompliance(lead: NormalizedLead): ComplianceDecision {
     tags.add('needs-compliance-review');
     tags.add('manual-review-required');
 
-    if (lead.leadType === 'divorce' || lead.leadType === 'probate') {
+    if (lead.leadType === 'divorce' || lead.leadType === 'probate' || lead.leadType === 'legal_filing') {
       tags.add('manual-review-only');
       return {
         status: 'needs_review',

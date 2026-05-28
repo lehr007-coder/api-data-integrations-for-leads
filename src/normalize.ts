@@ -14,6 +14,7 @@ function normalizeLeadType(value?: string): string {
   if (raw.includes('pre_foreclosure')) return 'pre_foreclosure';
   if (raw.includes('divorce') || raw.includes('dissolution')) return 'divorce';
   if (raw.includes('probate')) return 'probate';
+  if (raw.includes('legal') || raw.includes('filing') || raw.includes('court')) return 'legal_filing';
   if (raw.includes('tax')) return 'tax_delinquent';
   if (raw.includes('code')) return 'code_violation';
   return raw;
@@ -33,7 +34,7 @@ export function normalizeLead(payload: IntakeLeadPayload, cloudflareRecordRef: s
     for (const tag of payload.tags) baseTags.add(String(tag));
   }
 
-  if (['lis_pendens', 'foreclosure', 'pre_foreclosure', 'divorce', 'probate'].includes(leadType)) {
+  if (['lis_pendens', 'foreclosure', 'pre_foreclosure', 'divorce', 'probate', 'legal_filing'].includes(leadType)) {
     baseTags.add('api-risk-high');
     baseTags.add('needs-compliance-review');
   }
@@ -42,7 +43,7 @@ export function normalizeLead(payload: IntakeLeadPayload, cloudflareRecordRef: s
     baseTags.add('api-risk-medium');
   }
 
-  if (leadType === 'divorce' || leadType === 'probate') {
+  if (leadType === 'divorce' || leadType === 'probate' || leadType === 'legal_filing') {
     baseTags.add('manual-review-only');
   }
 

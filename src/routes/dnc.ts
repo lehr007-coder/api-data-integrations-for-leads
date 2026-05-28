@@ -2,6 +2,7 @@ import { normalizeLead } from '../normalize';
 import { scoreLead } from '../score';
 import { evaluateCompliance, applyComplianceDecision } from '../compliance';
 import { createOrUpdateGhlContact, createReadyLeadActions, type Env, type GhlActionResult } from '../ghl';
+import { evaluateImportPolicy, storeImportHold } from '../import-policy';
 import type { IntakeLeadPayload, NormalizedLead } from '../types';
 
 type DncStatus = 'clear' | 'blocked' | 'direct_mail_only';
@@ -161,7 +162,15 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
     const compliance = evaluateCompliance(scored);
     const compliantLead = applyComplianceDecision(scored, compliance);
     const routedLead = applyDncStatus(compliantLead, input);
-    const ghl = await createOrUpdateGhlContact(env, routedLead);
+    const importDecision = await evaluateImportPolicy(env, routedLead);
+    const ghl = importDecision.allowGhlSync
+      ? await createOrUpdateGhlContact(env, routedLead)
+      : { ok: false, error: importDecision.reason };
+
+    if (!importDecision.allowGhlSync) {
+      await storeImportHold(env, cloudflareRecordRef, routedLead, importDecision);
+    }
+
     const route = routeFor(dncStatus);
     const action = await createActionsOnce(env, cloudflareRecordRef, route, ghl.contactId, routedLead);
 
@@ -179,6 +188,7 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
         },
         route,
         payload,
+        importPolicy: importDecision,
         ghl,
         action
       }, null, 2),
@@ -190,6 +200,7 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
       cloudflareRecordRef,
       route,
       ghl,
+      importPolicy: importDecision,
       action,
       lead: routedLead
     });

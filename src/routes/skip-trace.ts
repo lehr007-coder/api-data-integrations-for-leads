@@ -3,6 +3,7 @@ import { scoreLead } from '../score';
 import { evaluateCompliance, applyComplianceDecision } from '../compliance';
 import { createOrUpdateGhlContact, type Env } from '../ghl';
 import { evaluateDistributionReadiness, applyDistributionDecision } from '../distribution-feeder';
+import { evaluateImportPolicy, storeImportHold } from '../import-policy';
 import type { IntakeLeadPayload } from '../types';
 
 interface SkipTraceCompleteRequest {
@@ -89,7 +90,14 @@ export async function skipTraceCompleteRoute(request: Request, env: Env): Promis
     const compliantLead = applyComplianceDecision(scored, compliance);
     const feeder = evaluateDistributionReadiness(compliantLead);
     const routedLead = applyDistributionDecision(compliantLead, feeder);
-    const ghl = await createOrUpdateGhlContact(env, routedLead);
+    const importDecision = await evaluateImportPolicy(env, routedLead);
+    const ghl = importDecision.allowGhlSync
+      ? await createOrUpdateGhlContact(env, routedLead)
+      : { ok: false, error: importDecision.reason };
+
+    if (!importDecision.allowGhlSync) {
+      await storeImportHold(env, cloudflareRecordRef, routedLead, importDecision);
+    }
 
     await env.RAW_PAYLOADS.put(
       `${cloudflareRecordRef}.skip-trace-complete.json`,
@@ -104,6 +112,7 @@ export async function skipTraceCompleteRoute(request: Request, env: Env): Promis
         payload,
         compliance,
         feeder,
+        importPolicy: importDecision,
         ghl
       }, null, 2),
       { httpMetadata: { contentType: 'application/json' } }
@@ -112,7 +121,9 @@ export async function skipTraceCompleteRoute(request: Request, env: Env): Promis
     return Response.json({
       ok: true,
       cloudflareRecordRef,
+      route: importDecision.allowGhlSync ? feeder.route : 'admin_hold',
       ghl,
+      importPolicy: importDecision,
       compliance,
       feeder,
       lead: routedLead

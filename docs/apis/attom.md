@@ -98,6 +98,18 @@ If ATTOM enables a different foreclosure endpoint for the account, set `ATTOM_FO
 
 Feed records are normalized into `foreclosure`, `pre_foreclosure`, or `lis_pendens` leads, deduped through KV, stored in R2, and routed to skip trace when email/phone is missing.
 
+## Admin Import Control
+
+GoHighLevel sync is controlled by:
+
+```text
+GET /admin/import-policy
+PUT /admin/import-policy
+POST /admin/import-policy
+```
+
+Default allowed lead types are foreclosure, pre-foreclosure, lis pendens, divorce, probate, tax delinquent, code violation, legal filing, and property enrichment. If a lead type is blocked or dry-run mode is enabled, the Worker stores an `.admin-hold.json` record in R2 and does not import that lead into GoHighLevel.
+
 ## CRM Use Risk Level
 
 `MEDIUM_RISK` for property enrichment. `HIGH_RISK` when foreclosure/distress fields are used.

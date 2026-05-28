@@ -4,6 +4,7 @@ import { evaluateCompliance, applyComplianceDecision } from '../compliance';
 import { checkAndStoreDedupe } from '../dedupe';
 import { createOrUpdateGhlContact, type Env } from '../ghl';
 import { evaluateDistributionReadiness, applyDistributionDecision } from '../distribution-feeder';
+import { evaluateImportPolicy, storeImportHold } from '../import-policy';
 import type { IntakeLeadPayload } from '../types';
 
 function getAuthHeader(request: Request): string | null {
@@ -56,6 +57,23 @@ export async function intakeRoute(request: Request, env: Env): Promise<Response>
 
     const initialFeeder = evaluateDistributionReadiness(compliantLead);
     const routedLead = applyDistributionDecision(compliantLead, initialFeeder);
+    const importDecision = await evaluateImportPolicy(env, routedLead);
+
+    if (!importDecision.allowGhlSync) {
+      await storeImportHold(env, cloudflareRecordRef, routedLead, importDecision);
+      return Response.json({
+        ok: true,
+        duplicate: false,
+        cloudflareRecordRef,
+        dedupeKey: dedupe.dedupeKey,
+        route: 'admin_hold',
+        importPolicy: importDecision,
+        compliance,
+        feeder: initialFeeder,
+        lead: routedLead
+      });
+    }
+
     const ghl = await createOrUpdateGhlContact(env, routedLead);
 
     return Response.json({
@@ -64,6 +82,7 @@ export async function intakeRoute(request: Request, env: Env): Promise<Response>
       cloudflareRecordRef,
       dedupeKey: dedupe.dedupeKey,
       ghl,
+      importPolicy: importDecision,
       compliance,
       feeder: initialFeeder,
       lead: routedLead
