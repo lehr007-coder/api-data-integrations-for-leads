@@ -1,11 +1,11 @@
 import type { Env } from '../ghl';
 
 const STAGES = [
-  { key: 'intake', suffix: '.json' },
   { key: 'attom', suffix: '.attom.json' },
   { key: 'skipTrace', suffix: '.skip-trace-complete.json' },
   { key: 'dnc', suffix: '.dnc-complete.json' },
-  { key: 'readyActions', suffix: '.ghl-ready-actions.json' }
+  { key: 'readyActions', suffix: '.ghl-ready-actions.json' },
+  { key: 'intake', suffix: '.json' }
 ] as const;
 
 function getAuthHeader(request: Request): string | null {
