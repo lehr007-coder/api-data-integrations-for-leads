@@ -178,7 +178,7 @@ async function fetchAttomForeclosureFeed(
     body = { raw: text };
   }
 
-  if (!res.ok) {
+  if (!res.ok && body?.status?.msg !== 'SuccessWithoutResult') {
     throw new Error(`ATTOM foreclosure feed failed ${res.status}: ${text}`);
   }
 
