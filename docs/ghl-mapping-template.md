@@ -4,7 +4,21 @@
 
 Map the API Data Integrations for Leads system to the existing GoHighLevel location, fields, pipelines, objects, workflows, users, and routing rules.
 
-Use existing fields first. Do not create new fields unless absolutely required.
+## Hard Rule: Do Not Create New Fields Unless There Is No Other Option
+
+This project must use existing GoHighLevel fields wherever possible.
+
+New GHL custom fields are prohibited unless all of the following are true:
+
+1. No standard GHL field can hold the value.
+2. No existing custom field can reasonably hold the value.
+3. A tag cannot represent the value.
+4. A Contact note cannot hold the summary.
+5. A Custom Object cannot hold the repeatable/history data.
+6. Cloudflare R2/KV/D1 cannot hold the raw/heavy data.
+7. Scott manually approves the new field.
+
+Codex, Claude Code, or any builder must not create new fields automatically.
 
 ## Known Location
 
@@ -29,11 +43,17 @@ activity_timeline
 listing_address
 last_webhook_received_at
 last_webhook_processed
+ylopo_leadType
+dashboard_event_json
+dashboard_lead_json
+dashboard_listing_json
+dashboard_matrix_json
+seller_intelligence_json
 ```
 
 ## Required Field ID Mapping
 
-Fill in actual GHL custom field IDs before production writes.
+Fill in actual GHL custom field IDs before production writes. Use the existing GHL field ID when it exists.
 
 | Logical Field | Existing GHL Field Name | GHL Field ID | Required | Notes |
 |---|---|---:|---:|---|
@@ -50,9 +70,9 @@ Fill in actual GHL custom field IDs before production writes.
 | Listing/Property Address | listing_address |  | Yes | Reuse existing field |
 | Last Webhook Received | last_webhook_received_at |  | Optional | Existing sync field |
 | Last Webhook Processed | last_webhook_processed |  | Optional | Existing sync field |
-| Cloudflare Record Ref | cloudflare_record_ref |  | Optional New | Only if no existing reference field exists |
-| Compliance Status | compliance_status |  | Optional New | Can also use tags/object |
-| DNC Status | dnc_status |  | Optional New | Can also use tags/object |
+| Cloudflare Record Ref | existing dashboard/reference field if available |  | Optional | Prefer object/note/Cloudflare ref before new field |
+| Compliance Status | tags/object/note preferred |  | Optional | Prefer tags + Compliance Review object |
+| DNC Status | tags/object/note preferred |  | Optional | Prefer tags + Compliance Review object |
 
 ## Pipeline Mapping
 
@@ -65,7 +85,7 @@ Use the existing seller or lead pipeline first.
 
 ## Stage Mapping
 
-Map these logical stages to the closest existing stage.
+Map these logical stages to the closest existing stage. Do not create new stages unless absolutely required and manually approved.
 
 | Logical Stage | Existing GHL Stage | Stage ID | Notes |
 |---|---|---:|---|
@@ -82,7 +102,7 @@ Map these logical stages to the closest existing stage.
 
 ## Custom Objects
 
-Use objects wherever possible.
+Use objects wherever possible for repeatable records instead of Contact fields.
 
 | Object | Object ID | Required | Purpose |
 |---|---:|---:|---|
@@ -93,7 +113,7 @@ Use objects wherever possible.
 
 ## Workflow Trigger Tags
 
-Use tags as lightweight workflow triggers.
+Use tags as lightweight workflow triggers instead of creating yes/no custom fields.
 
 ```text
 api-intake-new-lead
@@ -142,7 +162,7 @@ Tag added: api-feed-distribution-ready
 
 Do not bypass the existing lead distribution workflow.
 
-## Field Creation Rule
+## Existing-Field-First Decision Tree
 
 Before creating any field:
 
@@ -150,5 +170,22 @@ Before creating any field:
 2. Use existing custom fields.
 3. Use tags for yes/no statuses.
 4. Use Custom Objects for repeatable event data.
-5. Use Cloudflare for raw/heavy data.
-6. Only create new fields as a last resort.
+5. Use contact notes for short summaries.
+6. Use Cloudflare for raw/heavy data.
+7. Only propose a new field if absolutely necessary.
+8. Do not create the field until Scott approves it.
+
+## What Must Stay Out of Contact Fields
+
+Do not create Contact fields for:
+
+- every court status
+- every provider field
+- every filing subtype
+- every property characteristic
+- every sync result
+- raw JSON
+- full docket details
+- sensitive legal details
+
+Use objects, notes, tags, and Cloudflare storage instead.
