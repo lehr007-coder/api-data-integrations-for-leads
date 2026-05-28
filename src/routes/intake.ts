@@ -11,7 +11,7 @@ function getAuthHeader(request: Request): string | null {
 }
 
 function isAuthorized(request: Request, env: Env): boolean {
-  if (!env.WEBHOOK_SECRET) return true;
+  if (!env.WEBHOOK_SECRET) return false;
   const header = getAuthHeader(request);
   if (!header) return false;
   return header === env.WEBHOOK_SECRET || header === `Bearer ${env.WEBHOOK_SECRET}`;
@@ -21,6 +21,13 @@ export async function intakeRoute(request: Request, env: Env): Promise<Response>
   try {
     if (!isAuthorized(request, env)) {
       return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!env.GHL_API_TOKEN) {
+      return Response.json({
+        ok: false,
+        error: 'GHL_API_TOKEN is not configured.'
+      }, { status: 503 });
     }
 
     const payload = await request.json() as IntakeLeadPayload;
