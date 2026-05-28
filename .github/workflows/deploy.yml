@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -23,6 +24,13 @@ jobs:
 
       - name: Type Check
         run: npm run check
+
+      - name: Prepare Wrangler config
+        run: |
+          test -n "$DEDUPE_KV_NAMESPACE_ID"
+          node -e "const fs=require('fs'); const p='wrangler.toml'; fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace('ADD_KV_NAMESPACE_ID', process.env.DEDUPE_KV_NAMESPACE_ID));"
+        env:
+          DEDUPE_KV_NAMESPACE_ID: ${{ secrets.DEDUPE_KV_NAMESPACE_ID }}
 
       - name: Deploy Worker
         run: npx wrangler deploy

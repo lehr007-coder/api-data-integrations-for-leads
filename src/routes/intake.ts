@@ -4,6 +4,7 @@ import { evaluateCompliance, applyComplianceDecision } from '../compliance';
 import { checkAndStoreDedupe } from '../dedupe';
 import { createOrUpdateGhlContact, type Env } from '../ghl';
 import { evaluateDistributionReadiness, applyDistributionDecision } from '../distribution-feeder';
+import type { IntakeLeadPayload } from '../types';
 
 function getAuthHeader(request: Request): string | null {
   return request.headers.get('x-webhook-secret') || request.headers.get('authorization');
@@ -22,7 +23,7 @@ export async function intakeRoute(request: Request, env: Env): Promise<Response>
       return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await request.json();
+    const payload = await request.json() as IntakeLeadPayload;
     const cloudflareRecordRef = crypto.randomUUID();
 
     const normalized = normalizeLead(payload, cloudflareRecordRef);
