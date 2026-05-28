@@ -110,6 +110,8 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   }'
 ```
 
+When `dnc_status` is `clear`, the Worker updates the GHL contact, adds `api-feed-distribution-ready`, then creates one GHL note and one open follow-up task. The note/task creation is idempotent per `cloudflareRecordRef`.
+
 ## Expected Result
 
 The response should include:

@@ -18,6 +18,13 @@ export interface GhlSyncResult {
   error?: string;
 }
 
+export interface GhlActionResult {
+  ok: boolean;
+  noteId?: string;
+  taskId?: string;
+  errors?: string[];
+}
+
 function requireToken(env: Env): string {
   if (!env.GHL_API_TOKEN) {
     throw new Error('Missing GHL_API_TOKEN environment secret.');
@@ -103,4 +110,89 @@ export function buildGhlNote(lead: NormalizedLead): string {
     `Compliance: ${lead.complianceStatus}`,
     `Cloudflare ref: ${lead.cloudflareRecordRef}`
   ].filter(Boolean).join('\n');
+}
+
+async function parseJsonResponse(res: Response): Promise<any> {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return { raw: text };
+  }
+}
+
+function tomorrowIso(): string {
+  return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+}
+
+export async function createGhlContactNote(
+  env: Env,
+  contactId: string,
+  body: string
+): Promise<{ ok: boolean; noteId?: string; error?: string }> {
+  const res = await fetch(`${env.GHL_BASE_URL}/contacts/${contactId}/notes`, {
+    method: 'POST',
+    headers: ghlHeaders(env),
+    body: JSON.stringify({ body })
+  });
+  const parsed = await parseJsonResponse(res);
+
+  if (!res.ok) {
+    return { ok: false, error: `GHL note create failed ${res.status}: ${JSON.stringify(parsed)}` };
+  }
+
+  return { ok: true, noteId: parsed?.note?.id || parsed?.id || parsed?.noteId };
+}
+
+export async function createGhlContactTask(
+  env: Env,
+  contactId: string,
+  lead: NormalizedLead
+): Promise<{ ok: boolean; taskId?: string; error?: string }> {
+  const title = `Review ${lead.sourceProvider || 'API'} ${lead.leadType} lead`;
+  const body = [
+    `Lead is distribution-ready after contact append and DNC/compliance check.`,
+    lead.propertyAddress ? `Property: ${lead.propertyAddress}` : undefined,
+    lead.email ? `Email: ${lead.email}` : undefined,
+    lead.phone ? `Phone: ${lead.phone}` : undefined,
+    `Cloudflare ref: ${lead.cloudflareRecordRef}`
+  ].filter(Boolean).join('\n');
+
+  const res = await fetch(`${env.GHL_BASE_URL}/contacts/${contactId}/tasks`, {
+    method: 'POST',
+    headers: ghlHeaders(env),
+    body: JSON.stringify({
+      title,
+      body,
+      dueDate: tomorrowIso(),
+      completed: false
+    })
+  });
+  const parsed = await parseJsonResponse(res);
+
+  if (!res.ok) {
+    return { ok: false, error: `GHL task create failed ${res.status}: ${JSON.stringify(parsed)}` };
+  }
+
+  return { ok: true, taskId: parsed?.task?.id || parsed?.id || parsed?.taskId };
+}
+
+export async function createReadyLeadActions(
+  env: Env,
+  contactId: string,
+  lead: NormalizedLead
+): Promise<GhlActionResult> {
+  const errors: string[] = [];
+  const note = await createGhlContactNote(env, contactId, buildGhlNote(lead));
+  if (!note.ok && note.error) errors.push(note.error);
+
+  const task = await createGhlContactTask(env, contactId, lead);
+  if (!task.ok && task.error) errors.push(task.error);
+
+  return {
+    ok: errors.length === 0,
+    noteId: note.noteId,
+    taskId: task.taskId,
+    errors: errors.length ? errors : undefined
+  };
 }

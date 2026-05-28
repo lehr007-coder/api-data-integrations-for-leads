@@ -1,7 +1,7 @@
 import { normalizeLead } from '../normalize';
 import { scoreLead } from '../score';
 import { evaluateCompliance, applyComplianceDecision } from '../compliance';
-import { createOrUpdateGhlContact, type Env } from '../ghl';
+import { createOrUpdateGhlContact, createReadyLeadActions, type Env, type GhlActionResult } from '../ghl';
 import type { IntakeLeadPayload, NormalizedLead } from '../types';
 
 type DncStatus = 'clear' | 'blocked' | 'direct_mail_only';
@@ -104,6 +104,35 @@ function routeFor(status: DncStatus): 'ready' | 'blocked' | 'direct_mail_only' {
   return 'ready';
 }
 
+async function createActionsOnce(
+  env: Env,
+  cloudflareRecordRef: string,
+  route: string,
+  contactId: string | undefined,
+  lead: NormalizedLead
+): Promise<GhlActionResult | undefined> {
+  if (route !== 'ready' || !contactId) return undefined;
+
+  const key = `${cloudflareRecordRef}.ghl-ready-actions.json`;
+  const existing = await env.RAW_PAYLOADS.get(key);
+  if (existing) {
+    const record: any = await existing.json();
+    return {
+      ok: true,
+      noteId: record?.action?.noteId,
+      taskId: record?.action?.taskId
+    };
+  }
+
+  const action = await createReadyLeadActions(env, contactId, lead);
+  await env.RAW_PAYLOADS.put(
+    key,
+    JSON.stringify({ createdAt: new Date().toISOString(), action }, null, 2),
+    { httpMetadata: { contentType: 'application/json' } }
+  );
+  return action;
+}
+
 export async function dncCompleteRoute(request: Request, env: Env): Promise<Response> {
   try {
     if (!isAuthorized(request, env)) {
@@ -134,6 +163,7 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
     const routedLead = applyDncStatus(compliantLead, input);
     const ghl = await createOrUpdateGhlContact(env, routedLead);
     const route = routeFor(dncStatus);
+    const action = await createActionsOnce(env, cloudflareRecordRef, route, ghl.contactId, routedLead);
 
     await env.RAW_PAYLOADS.put(
       `${cloudflareRecordRef}.dnc-complete.json`,
@@ -149,7 +179,8 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
         },
         route,
         payload,
-        ghl
+        ghl,
+        action
       }, null, 2),
       { httpMetadata: { contentType: 'application/json' } }
     );
@@ -159,6 +190,7 @@ export async function dncCompleteRoute(request: Request, env: Env): Promise<Resp
       cloudflareRecordRef,
       route,
       ghl,
+      action,
       lead: routedLead
     });
   } catch (error) {
