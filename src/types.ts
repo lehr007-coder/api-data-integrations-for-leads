@@ -15,6 +15,8 @@ export interface IntakeLeadPayload {
   source_provider?: string;
   estimated_equity?: number;
   estimated_value?: number;
+  attom_id?: string;
+  provider_record_id?: string;
   tags?: string[];
   [key: string]: unknown;
 }

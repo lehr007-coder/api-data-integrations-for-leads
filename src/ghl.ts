@@ -5,6 +5,8 @@ export interface Env {
   GHL_LOCATION_ID: string;
   GHL_API_TOKEN?: string;
   WEBHOOK_SECRET?: string;
+  ATTOM_API_KEY?: string;
+  ATTOM_BASE_URL?: string;
   DEDUPE_KV: KVNamespace;
   RAW_PAYLOADS: R2Bucket;
   LEAD_QUEUE?: Queue;

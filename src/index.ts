@@ -1,5 +1,6 @@
 import { intakeRoute } from './routes/intake';
 import { healthRoute } from './routes/health';
+import { attomPropertyRoute, attomStatusRoute } from './routes/attom';
 import type { Env } from './ghl';
 
 export default {
@@ -16,6 +17,14 @@ export default {
 
     if (url.pathname === '/intake/test' && request.method === 'POST') {
       return intakeRoute(request, env);
+    }
+
+    if (url.pathname === '/providers/attom/status' && request.method === 'GET') {
+      return attomStatusRoute(env);
+    }
+
+    if (url.pathname === '/providers/attom/property' && request.method === 'POST') {
+      return attomPropertyRoute(request, env);
     }
 
     return Response.json({ ok: false, error: 'Not Found' }, { status: 404 });

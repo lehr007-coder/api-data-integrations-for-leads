@@ -53,6 +53,20 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   --data-binary @test-payloads/tax-delinquent.json
 ```
 
+## ATTOM Property Lookup Test
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/attom/property" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "address": "123 Main St Fort Lauderdale FL 33301",
+    "lead_type": "property_enrichment",
+    "email": "owner@example.com",
+    "phone": "9545551212"
+  }'
+```
+
 ## Expected Result
 
 The response should include:
