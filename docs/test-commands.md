@@ -112,6 +112,13 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
 
 When `dnc_status` is `clear`, the Worker updates the GHL contact, adds `api-feed-distribution-ready`, then creates one GHL note and one open follow-up task. The note/task creation is idempotent per `cloudflareRecordRef`.
 
+## Inspect Record Status
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/records/status?cloudflareRecordRef=CLOUDFLARE_RECORD_REF" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET"
+```
+
 ## Expected Result
 
 The response should include:

@@ -3,6 +3,7 @@ import { healthRoute } from './routes/health';
 import { attomPropertyRoute, attomStatusRoute } from './routes/attom';
 import { skipTraceCompleteRoute } from './routes/skip-trace';
 import { dncCompleteRoute } from './routes/dnc';
+import { recordStatusRoute } from './routes/records';
 import type { Env } from './ghl';
 
 export default {
@@ -35,6 +36,10 @@ export default {
 
     if (url.pathname === '/pending/dnc/complete' && request.method === 'POST') {
       return dncCompleteRoute(request, env);
+    }
+
+    if (url.pathname === '/records/status' && request.method === 'GET') {
+      return recordStatusRoute(request, env);
     }
 
     return Response.json({ ok: false, error: 'Not Found' }, { status: 404 });
