@@ -1,8 +1,11 @@
-import type { Env } from '../ghl';
+import { createOrUpdateGhlContact, type Env } from '../ghl';
+import type { NormalizedLead } from '../types';
 
 interface BridgeReviewsRequest {
   revieweeKey?: string;
   revieweeEmail?: string;
+  revieweeName?: string;
+  phone?: string;
   top?: number;
   skip?: number;
   store?: boolean;
@@ -31,6 +34,77 @@ function boundedTop(value: unknown): number {
 
 function odataQuote(value: string): string {
   return value.replace(/'/g, "''");
+}
+
+function values(body: any): any[] {
+  return Array.isArray(body?.value) ? body.value : [];
+}
+
+function field(record: any, ...names: string[]): string | undefined {
+  for (const name of names) {
+    const value = clean(record?.[name]);
+    if (value) return value;
+  }
+  return undefined;
+}
+
+function firstReviewee(body: any): any {
+  return values(body)[0] || {};
+}
+
+function reviewArray(reviewee: any, reviewsBody?: any): any[] {
+  if (Array.isArray(reviewee?.Reviews)) return reviewee.Reviews;
+  if (Array.isArray(reviewee?.reviews)) return reviewee.reviews;
+  return values(reviewsBody);
+}
+
+function averageRating(reviews: any[]): number | undefined {
+  const ratings = reviews
+    .map((review) => Number(review.Rating || review.rating || review.ReviewRating))
+    .filter((rating) => Number.isFinite(rating));
+  if (!ratings.length) return undefined;
+  return Math.round((ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length) * 10) / 10;
+}
+
+function buildReviewSummary(reviewee: any, reviews: any[]): string {
+  const summary = [
+    `Bridge Zillow reviewee synced.`,
+    field(reviewee, 'RevieweeKey') ? `Reviewee key: ${field(reviewee, 'RevieweeKey')}` : undefined,
+    `Review count: ${reviews.length}`,
+    averageRating(reviews) ? `Average rating: ${averageRating(reviews)}` : undefined
+  ].filter(Boolean);
+
+  return summary.join('\n');
+}
+
+function mapRevieweeToGhlLead(
+  cloudflareRecordRef: string,
+  input: BridgeReviewsRequest,
+  reviewee: any,
+  reviews: any[]
+): NormalizedLead {
+  const name = clean(input.revieweeName)
+    || field(reviewee, 'RevieweeName', 'Name', 'FullName', 'AgentName')
+    || clean(input.revieweeEmail)
+    || field(reviewee, 'RevieweeEmail', 'Email');
+
+  return {
+    leadType: 'zillow_agent_reviews',
+    fullName: name,
+    email: clean(input.revieweeEmail) || field(reviewee, 'RevieweeEmail', 'Email'),
+    phone: clean(input.phone) || field(reviewee, 'Phone', 'OfficePhone', 'MobilePhone'),
+    sourceProvider: 'bridge_zillow_agent_reviews',
+    tags: [
+      'bridge-data-output',
+      'zillow-agent-reviews',
+      'crm-social-proof',
+      `zillow-review-count-${reviews.length}`,
+      averageRating(reviews) ? `zillow-rating-${averageRating(reviews)}` : ''
+    ].filter(Boolean),
+    complianceStatus: 'approved',
+    leadPriorityLabel: 'INFO',
+    cloudflareRecordRef
+  };
 }
 
 async function bridgeFetch(env: Env, path: string, params: Record<string, string | number | undefined>): Promise<any> {
@@ -146,6 +220,84 @@ export async function bridgeReviewsRoute(request: Request, env: Env): Promise<Re
     return Response.json({
       ok: false,
       error: error instanceof Error ? error.message : 'Unknown Bridge reviews error'
+    }, { status: 500 });
+  }
+}
+
+export async function bridgeSyncReviewsToGhlRoute(request: Request, env: Env): Promise<Response> {
+  try {
+    if (!isAuthorized(request, env)) {
+      return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!env.BRIDGE_ACCESS_TOKEN) {
+      return Response.json({ ok: false, error: 'BRIDGE_ACCESS_TOKEN is not configured.' }, { status: 503 });
+    }
+
+    if (!env.GHL_API_TOKEN) {
+      return Response.json({ ok: false, error: 'GHL_API_TOKEN is not configured.' }, { status: 503 });
+    }
+
+    const input = await request.json() as BridgeReviewsRequest;
+    const revieweeEmail = clean(input.revieweeEmail);
+    const revieweeKey = clean(input.revieweeKey);
+
+    if (!revieweeEmail && !revieweeKey) {
+      return Response.json({ ok: false, error: 'revieweeEmail or revieweeKey is required.' }, { status: 400 });
+    }
+
+    const cloudflareRecordRef = crypto.randomUUID();
+    const revieweeParams: Record<string, string | number | undefined> = {
+      '$top': 1,
+      '$expand': 'Reviews'
+    };
+
+    if (revieweeEmail) {
+      revieweeParams['$filter'] = `RevieweeEmail eq '${odataQuote(revieweeEmail)}'`;
+    } else if (revieweeKey) {
+      revieweeParams['$filter'] = `RevieweeKey eq '${odataQuote(revieweeKey)}'`;
+    }
+
+    const revieweeResult = await bridgeFetch(env, 'Reviewees', revieweeParams);
+    const reviewee = firstReviewee(revieweeResult.body);
+
+    const reviewsResult = revieweeKey
+      ? await bridgeFetch(env, 'Reviews', {
+        '$top': boundedTop(input.top),
+        '$filter': `RevieweeKey eq '${odataQuote(revieweeKey)}'`
+      })
+      : undefined;
+
+    const reviews = reviewArray(reviewee, reviewsResult?.body);
+    const lead = mapRevieweeToGhlLead(cloudflareRecordRef, input, reviewee, reviews);
+    const ghl = await createOrUpdateGhlContact(env, lead);
+
+    await env.RAW_PAYLOADS.put(
+      `${cloudflareRecordRef}.bridge-zillow-reviews.json`,
+      JSON.stringify({
+        syncedAt: new Date().toISOString(),
+        input,
+        revieweeResult,
+        reviewsResult,
+        reviewSummary: buildReviewSummary(reviewee, reviews),
+        ghl,
+        lead
+      }, null, 2),
+      { httpMetadata: { contentType: 'application/json' } }
+    );
+
+    return Response.json({
+      ok: true,
+      cloudflareRecordRef,
+      reviewCount: reviews.length,
+      averageRating: averageRating(reviews),
+      ghl,
+      lead
+    });
+  } catch (error) {
+    return Response.json({
+      ok: false,
+      error: error instanceof Error ? error.message : 'Unknown Bridge CRM sync error'
     }, { status: 500 });
   }
 }

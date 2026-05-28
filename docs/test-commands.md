@@ -253,6 +253,20 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   }'
 ```
 
+## Bridge Zillow Agent Reviews to GHL
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/bridge/zillow-agent-reviews/sync-ghl" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "revieweeEmail": "agent@example.com",
+    "revieweeName": "Agent Name",
+    "phone": "9545551212",
+    "top": 25
+  }'
+```
+
 ## Complete Pending Skip Trace
 
 ```bash
