@@ -202,6 +202,27 @@ The Worker appends `DATA_GOV_API_KEY` server-side and stores the response in R2 
 curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/reol/status"
 ```
 
+## Smarty Status
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/smarty/status"
+```
+
+## Smarty US Street Validation
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/smarty/us-street" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "street": "1600 Pennsylvania Ave NW",
+    "city": "Washington",
+    "state": "DC",
+    "zipcode": "20500",
+    "candidates": 1
+  }'
+```
+
 ## Complete Pending Skip Trace
 
 ```bash
