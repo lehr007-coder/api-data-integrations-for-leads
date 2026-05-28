@@ -13,6 +13,7 @@ export interface Env {
   REOL_API_KEY?: string;
   SMARTY_AUTH_ID?: string;
   SMARTY_AUTH_TOKEN?: string;
+  BRIDGE_ACCESS_TOKEN?: string;
   DEDUPE_KV: KVNamespace;
   RAW_PAYLOADS: R2Bucket;
   LEAD_QUEUE?: Queue;

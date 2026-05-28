@@ -11,6 +11,7 @@ import { adminImportPolicyRoute, adminReleaseRoute } from './routes/admin';
 import { dataGovRequestRoute, dataGovStatusRoute } from './routes/data-gov';
 import { reolStatusRoute } from './routes/reol';
 import { smartyStatusRoute, smartyUsStreetRoute } from './routes/smarty';
+import { bridgeRevieweesRoute, bridgeReviewsRoute, bridgeStatusRoute } from './routes/bridge';
 import { skipTraceCompleteRoute } from './routes/skip-trace';
 import { dncCompleteRoute } from './routes/dnc';
 import { recordListRoute, recordStatusRoute } from './routes/records';
@@ -54,6 +55,18 @@ export default {
 
     if (url.pathname === '/providers/smarty/us-street' && request.method === 'POST') {
       return smartyUsStreetRoute(request, env);
+    }
+
+    if (url.pathname === '/providers/bridge/zillow-agent-reviews/status' && request.method === 'GET') {
+      return bridgeStatusRoute(env);
+    }
+
+    if (url.pathname === '/providers/bridge/zillow-agent-reviews/reviewees' && request.method === 'POST') {
+      return bridgeRevieweesRoute(request, env);
+    }
+
+    if (url.pathname === '/providers/bridge/zillow-agent-reviews/reviews' && request.method === 'POST') {
+      return bridgeReviewsRoute(request, env);
     }
 
     if (url.pathname === '/providers/attom/property' && request.method === 'POST') {

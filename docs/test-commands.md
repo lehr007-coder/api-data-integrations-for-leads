@@ -223,6 +223,36 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
   }'
 ```
 
+## Bridge Zillow Agent Reviews Status
+
+```bash
+curl -X GET "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/bridge/zillow-agent-reviews/status"
+```
+
+## Bridge Zillow Agent Reviewees
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/bridge/zillow-agent-reviews/reviewees" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "revieweeEmail": "agent@example.com",
+    "top": 10
+  }'
+```
+
+## Bridge Zillow Agent Reviews
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/bridge/zillow-agent-reviews/reviews" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "revieweeKey": "REVIEWEE_KEY",
+    "top": 25
+  }'
+```
+
 ## Complete Pending Skip Trace
 
 ```bash
