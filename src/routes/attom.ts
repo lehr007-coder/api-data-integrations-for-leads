@@ -162,7 +162,6 @@ async function fetchAttomForeclosureFeed(
     || `${baseUrl.replace(/\/$/, '')}/preforeclosuredetails`;
   const url = new URL(endpoint);
   setParams(url, search.params);
-  url.searchParams.set('pageSize', String(boundedFeedLimit(search.limit)));
 
   const res = await fetch(url.toString(), {
     headers: {
