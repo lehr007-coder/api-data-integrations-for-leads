@@ -81,6 +81,30 @@ curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev
 
 Expected result: `202 Accepted` with `pending: true` and `route: "skip_trace"`.
 
+## ATTOM Batch Lookup
+
+```bash
+curl -X POST "https://api-data-integrations-for-leads.YOUR_SUBDOMAIN.workers.dev/providers/attom/batch" \
+  -H "Content-Type: application/json" \
+  -H "x-webhook-secret: YOUR_WEBHOOK_SECRET" \
+  --data-binary '{
+    "items": [
+      {
+        "address": "4529 Winona Court, Denver, CO",
+        "lead_type": "property_enrichment",
+        "email": "owner1@example.com",
+        "phone": "9545551212"
+      },
+      {
+        "address": "1600 Pennsylvania Ave NW Washington DC",
+        "lead_type": "property_enrichment"
+      }
+    ]
+  }'
+```
+
+Batch limit: 25 items.
+
 ## Complete Pending Skip Trace
 
 ```bash

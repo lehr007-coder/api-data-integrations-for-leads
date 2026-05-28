@@ -21,6 +21,10 @@ interface AttomPropertyRequest {
   tags?: string[];
 }
 
+interface AttomBatchRequest {
+  items?: AttomPropertyRequest[];
+}
+
 function getAuthHeader(request: Request): string | null {
   return request.headers.get('x-webhook-secret') || request.headers.get('authorization');
 }
@@ -217,6 +221,75 @@ export async function attomPropertyRoute(request: Request, env: Env): Promise<Re
     return Response.json({
       ok: false,
       error: error instanceof Error ? error.message : 'Unknown ATTOM integration error'
+    }, { status: 500 });
+  }
+}
+
+export async function attomBatchRoute(request: Request, env: Env): Promise<Response> {
+  try {
+    if (!isAuthorized(request, env)) {
+      return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!env.ATTOM_API_KEY) {
+      return Response.json({ ok: false, error: 'ATTOM_API_KEY is not configured.' }, { status: 503 });
+    }
+
+    if (!env.GHL_API_TOKEN) {
+      return Response.json({ ok: false, error: 'GHL_API_TOKEN is not configured.' }, { status: 503 });
+    }
+
+    const payload = await request.json() as AttomBatchRequest;
+    const items = Array.isArray(payload.items) ? payload.items : [];
+
+    if (items.length === 0) {
+      return Response.json({ ok: false, error: 'items array is required.' }, { status: 400 });
+    }
+
+    if (items.length > 25) {
+      return Response.json({ ok: false, error: 'Batch limit is 25 items.' }, { status: 400 });
+    }
+
+    const results = [];
+    for (let index = 0; index < items.length; index += 1) {
+      try {
+        const item = items[index];
+        const attomBody = await fetchAttomProperty(env, item);
+        const lead = mapAttomToLead(item, attomBody);
+        const response = await processAttomLead(env, lead, attomBody);
+        const body: any = await response.json();
+        results.push({
+          index,
+          status: response.status,
+          ok: body.ok === true,
+          cloudflareRecordRef: body.cloudflareRecordRef,
+          duplicate: body.duplicate,
+          pending: body.pending,
+          route: body.route || body.feeder?.route,
+          ghl: body.ghl,
+          error: body.error
+        });
+      } catch (error) {
+        results.push({
+          index,
+          status: 500,
+          ok: false,
+          error: error instanceof Error ? error.message : 'Unknown ATTOM batch item error'
+        });
+      }
+    }
+
+    return Response.json({
+      ok: results.some((result) => result.ok),
+      total: results.length,
+      succeeded: results.filter((result) => result.ok).length,
+      failed: results.filter((result) => !result.ok).length,
+      results
+    }, { status: results.some((result) => result.ok) ? 207 : 500 });
+  } catch (error) {
+    return Response.json({
+      ok: false,
+      error: error instanceof Error ? error.message : 'Unknown ATTOM batch error'
     }, { status: 500 });
   }
 }

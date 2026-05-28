@@ -1,6 +1,6 @@
 import { intakeRoute } from './routes/intake';
 import { healthRoute } from './routes/health';
-import { attomPropertyRoute, attomStatusRoute } from './routes/attom';
+import { attomBatchRoute, attomPropertyRoute, attomStatusRoute } from './routes/attom';
 import { skipTraceCompleteRoute } from './routes/skip-trace';
 import { dncCompleteRoute } from './routes/dnc';
 import { recordListRoute, recordStatusRoute } from './routes/records';
@@ -28,6 +28,10 @@ export default {
 
     if (url.pathname === '/providers/attom/property' && request.method === 'POST') {
       return attomPropertyRoute(request, env);
+    }
+
+    if (url.pathname === '/providers/attom/batch' && request.method === 'POST') {
+      return attomBatchRoute(request, env);
     }
 
     if (url.pathname === '/pending/skip-trace/complete' && request.method === 'POST') {
